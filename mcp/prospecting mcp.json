@@ -1,0 +1,87 @@
+{
+  "name": "prospecting mcp",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "a107112f-f6dc-49c8-81da-dfe376446ce8"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cc2fa900-069f-4260-ab5c-1d3d324a124a",
+      "name": "MCP Server Trigger",
+      "webhookId": "a107112f-f6dc-49c8-81da-dfe376446ce8"
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to find sales prospects for a given sales query. This tool hunts for perspective clients and returns leads",
+        "workflowId": {
+          "__rl": true,
+          "value": "Opj7HCloq6edMS3Q",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Opj7HCloq6edMS3Q",
+          "cachedResultName": "prospecting sub-agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', `What kind of sales prospects you are looking for. Such as:\n- find suitable accountants in the US to sell accounting software. `, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        96,
+        208
+      ],
+      "id": "6aef050e-a87f-42b9-989a-e3df4874a56b",
+      "name": "Call 'prospecting sub-agent'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Call 'prospecting sub-agent'": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e8c165b7-1fda-46c6-bca6-a32d71d6b6c0",
+  "meta": {
+    "instanceId": "ed2b34ded3b6fbe091ce502d0426341f362fbd6b763f35efdd25f3c3d799c837"
+  },
+  "id": "d6fM4hgJnMW6eEbU",
+  "tags": []
+}

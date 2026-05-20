@@ -1,0 +1,427 @@
+{
+  "name": "RevOps subagent",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "reasoningEffort": "low"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        224
+      ],
+      "id": "bd69b4c6-8cf2-475a-bd2a-3ac2e38267f0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "sKIkqhuBRcKaZ0ly",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"name\": \"Full name of the lead\",\n  \"company\": \"Where they work\",\n  \"role\": \"Their job in that company\",\n  \"email\": \"Their email\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        224
+      ],
+      "id": "a7cecdf2-22e9-4848-8eb9-d8fb1e7a53cd",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.sales_lead_descriptiom }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Based on the input of the user that describes a sales lead, you output structured data which would then be fed to pipedrive"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "63da6e48-751f-4c08-9571-9b0e9888a405",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "resource": "organization",
+        "name": "={{ $json.output.company }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "ae31274a-10a7-426e-9c0a-fc64b2c46a48",
+      "name": "Create an organization",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "nW9FEt2LGkfzXjeu",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "person",
+        "name": "={{ $('AI Agent').item.json.output.name }}",
+        "additionalFields": {
+          "emails": {
+            "emailProperties": [
+              {
+                "value": "={{ $('AI Agent').item.json.output.email }}"
+              }
+            ]
+          },
+          "org_id": "={{ $json.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        96
+      ],
+      "id": "7e947738-7268-46e5-a47a-5b20d36a180f",
+      "name": "Create a person",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "nW9FEt2LGkfzXjeu",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "title": "={{ $('AI Agent').item.json.output.name }}",
+        "organization_id": "={{ $('Create an organization').item.json.id }}",
+        "additionalFields": {
+          "person_id": "={{ $json.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 2,
+      "position": [
+        1888,
+        176
+      ],
+      "id": "de431494-b7f8-47f4-bc89-8b7994089327",
+      "name": "Create a lead",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "nW9FEt2LGkfzXjeu",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "sales_lead_descriptiom"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "493638da-1095-46bb-b559-14eb82a35a00",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "content": "## Data Parser\nuse an agent with structured outputs",
+        "height": 576,
+        "width": 304
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        192,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "c37921f6-31fb-4343-8229-69af52bedd9a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Data Loader\nstore the prospect data in pipedrive",
+        "height": 576,
+        "width": 1572
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        560,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "f7fb17e7-74b8-488a-adc3-71728f2a44b9",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "resource": "organization",
+        "operation": "search",
+        "term": "={{ $json.output.company }}",
+        "exactMatch": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -112
+      ],
+      "id": "2d73f528-2f67-4469-9c15-36c870f78f55",
+      "name": "Search organizations",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "nW9FEt2LGkfzXjeu",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a3d0c646-9b8c-47d8-9595-cd0e36be9a78",
+              "leftValue": "={{ $json.data.items.length  }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        -112
+      ],
+      "id": "ca383d9f-7356-4e69-aa6a-1f3c02783f81",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1d53e48b-5679-48b8-83f7-0586809343f3",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1472,
+        0
+      ],
+      "id": "c9584065-1491-4b3a-9463-841384dee8fe",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "resource": "person",
+        "operation": "search",
+        "term": "={{ $('AI Agent').item.json.output.name }}",
+        "exactMatch": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        -96
+      ],
+      "id": "18c32a70-80d9-47ed-a680-db94f43ff4e0",
+      "name": "Search persons",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "nW9FEt2LGkfzXjeu",
+          "name": "Pipedrive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Search organizations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an organization": {
+      "main": [
+        [
+          {
+            "node": "Search persons",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a person": {
+      "main": [
+        [
+          {
+            "node": "Create a lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search organizations": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Create an organization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Create a person",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search persons": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1d4df660-b29b-4957-b8d3-7504fedf7c86",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ed2b34ded3b6fbe091ce502d0426341f362fbd6b763f35efdd25f3c3d799c837"
+  },
+  "id": "45aHzjQ5HnMmuo44",
+  "tags": []
+}

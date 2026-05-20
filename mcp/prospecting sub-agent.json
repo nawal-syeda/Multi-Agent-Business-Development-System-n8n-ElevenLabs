@@ -1,0 +1,197 @@
+{
+  "name": "prospecting sub-agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a sales prospect research agent that returns best prospect clients for the user based on their query.\n\nFind 5 real sales prospects based on the user's query.\n\nSEARCH:\n- Search multiple sources until you find 5 prospects\n- Scrape pages to extract real names, companies, roles\n- Use Hunter.io to find email for EVERY prospect found\n- If Hunter.io fails for one prospect, try again for others\n- Keep searching until 5 prospects with attempted emails\n\nRULES:\n- Only use data from tool results\n- Never invent names, emails, or companies\n- Empty string for any missing field\n- Every prospect needs a real source URL\n\nOUTPUT:\nReturn ONLY valid JSON. No text. No markdown.\nFollow the output schema exactly.",
+          "maxIterations": 30
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        432,
+        0
+      ],
+      "id": "9db2b2e5-ad73-49f6-96ff-76eb32e2c17d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {
+          "reasoningEffort": "low"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        224
+      ],
+      "id": "1b64ed22-8fb4-4500-8c46-6d41a700b361",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "sKIkqhuBRcKaZ0ly",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Prospects\": [\n  {\n\t\"firstname\": \"Prospect's first name\",\n\t\"lastname\": \"their last name\",\n    \"company\": \"where they work\",\n    \"role\": \"what do they do\",\n    \"email\": \"their email\",\n    \"rationale\": \"why do they qualify as a prospect\"\n}\n  ]\n  \n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        224
+      ],
+      "id": "78bc61e5-c868-4468-bf46-7f61a6159f16",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.apify.com/",
+        "authentication": "bearerAuth",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        224
+      ],
+      "id": "e3b774ef-047e-44ba-9036-759b6987e3b2",
+      "name": "MCP Client",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3Bkz1OisnICFRKGb",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.hunter.io/mcp",
+        "authentication": "bearerAuth",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        224
+      ],
+      "id": "3caac22d-90f1-46b8-9ef1-7070d5626444",
+      "name": "MCP Client1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "VRrhbUtVZNQsa9ii",
+          "name": "Bearer Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        0
+      ],
+      "id": "fd774f98-19b5-4135-b204-457574a013f8",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "MCP Client1": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "19a88fa5-5e37-4e67-8a79-ff1ba4767ca7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ed2b34ded3b6fbe091ce502d0426341f362fbd6b763f35efdd25f3c3d799c837"
+  },
+  "id": "Opj7HCloq6edMS3Q",
+  "tags": []
+}

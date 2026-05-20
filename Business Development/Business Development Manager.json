@@ -1,0 +1,714 @@
+{
+  "name": "Business Development Manager",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1kDNNZBh4lwNOCiZHAsOf6HxGdlUq3tVQ",
+          "mode": "list",
+          "cachedResultName": "ICP_file_drop",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1kDNNZBh4lwNOCiZHAsOf6HxGdlUq3tVQ"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "4ea814a6-ed70-43b8-a3ae-6faf910fc4cc",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "aVHXDnty2eWiQ4xh",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        512,
+        0
+      ],
+      "id": "15ec8464-3fe3-4b09-b86c-0aab37f080b5",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "aVHXDnty2eWiQ4xh",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        736,
+        0
+      ],
+      "id": "6ac9e2b5-fac9-4814-8cf4-280e61ca6109",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "\"You are the Sales Manager Agent for an AI  Automation Agency, WishLabs AI.\nYou are provided with the ICP for an ideal prospect.\nYou must carry out these steps:\n\nFirst, use your Prospecting Sub-agent tool once to search online for leads, providing a query based on the ICP.\n\nNext, for each of the identified prospects, use your RevOps sub-agent tool to store the information in the Pipedrive CRM database. Use the tool repeatedly once for each prospect.\n\nFinally, use your SDR sub-agent tool once; this tool will retrieve everyone in Pipedrive and draft an outbound sales email for all of them.\n\nThen reply with a summary of the outcome.\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "1842e072-db3f-4240-9f77-dc128f075418",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        224
+      ],
+      "id": "b2f6d467-ee9d-4328-882c-ddd1ed8f2786",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "sKIkqhuBRcKaZ0ly",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to search the internet for leads also use prospecting tools to predict their email address. This tool will return the lead information",
+        "workflowId": {
+          "__rl": true,
+          "value": "Opj7HCloq6edMS3Q",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Opj7HCloq6edMS3Q",
+          "cachedResultName": "prospecting sub-agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', `A description of the prospect`, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        224
+      ],
+      "id": "d5f617e0-3c7c-480f-b57b-60c8f0380964",
+      "name": "Call 'prospecting sub-agent'"
+    },
+    {
+      "parameters": {
+        "description": "Call this too to save a sales lead in  Pipedrive CRM. Describe the prospect lead providing their  name, company, role, email address. ",
+        "workflowId": {
+          "__rl": true,
+          "value": "45aHzjQ5HnMmuo44",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/45aHzjQ5HnMmuo44",
+          "cachedResultName": "RevOps subagent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sales_lead_descriptiom": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('sales_lead_descriptiom', `A description of the prospect's name, company, role and email`, 'string') }}"
+          },
+          "matchingColumns": [
+            "sales_lead_descriptiom"
+          ],
+          "schema": [
+            {
+              "id": "sales_lead_descriptiom",
+              "displayName": "sales_lead_descriptiom",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        224
+      ],
+      "id": "1718508b-744e-4c00-a0d4-49594646c545",
+      "name": "Call 'RevOps subagent'"
+    },
+    {
+      "parameters": {
+        "description": "This tool generates SDT sales outreach emails to all prospects that have been loaded to the pipedrive CRM",
+        "workflowId": {
+          "__rl": true,
+          "value": "HkOyJ8B6krussndK",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/HkOyJ8B6krussndK",
+          "cachedResultName": "SDR"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        224
+      ],
+      "id": "5139a99a-f4d3-41ba-a405-e868e87e0cd5",
+      "name": "Call 'SDR'"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"success\": true,\n  \"summary\": \"a concise description of what happened\",\n  \"metrics\":[{\n\"prospects_found\": \"number of prospects found\",\n\"pipedrive_saved\": \"number of prospects saved inpipedrive\" ,\n\"emails_drafted\": \"number of emails drafted\",\n\"errors\": \"error description if any\",\n\"quality_score\": \"quality of workflow execution completeness 1-10\"}]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1472,
+        224
+      ],
+      "id": "4c7f53f9-f718-4579-b25b-0426d6cd8ab5",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "dc9ecbca-ca65-44f1-acfd-347522fb080b",
+              "leftValue": "={{ $json.output.success }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1680,
+        0
+      ],
+      "id": "f0f88ada-51b5-4bae-9585-2f1fb81325e3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "## Data Extraction\n\n",
+        "height": 560,
+        "width": 656
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        -400
+      ],
+      "typeVersion": 1,
+      "id": "75cd1dc6-ddfa-4fe4-b9b5-99ee51cf8cad",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Agent",
+        "height": 560,
+        "width": 704
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        912,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "d584f530-5ee2-4203-badb-c770be974177",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Notififcation",
+        "height": 576,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1600,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "1e116e20-c4de-451d-b168-676feffb495e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"run_id\": \"{{ $now.toMillis() }}\",\n  \"date\": \"{{ $now.toLocaleString() }}\",\n  \"icp_file\": \"{{ $('Google Drive Trigger').item.json.name }}\",\n  \"prospects_found\": \"{{ $('AI Agent').item.json.output.prospects_found }}\",\n  \"pipedrive_saved\": \"{{  $('AI Agent').item.json.output.pipedrive_saved }}\",\n  \"emails_drafted\": \"{{  $('AI Agent').item.json.output.emails_drafted }}\",\n  \"success\": \"{{ $('AI Agent').item.json.output.success }}\",\n  \"errors\": \"{{ $('AI Agent').item.json.output.metrics.errors }}\",\n  \"quality_score\": \"{{ $('AI Agent').item.json.output.metrics.quality_score }}\",\n\n  \"raw_summary\": \"{{ $('AI Agent').item.json.output.summary }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2128,
+        -96
+      ],
+      "id": "ba9efeee-9cee-4a92-8b0b-5670a9203e8b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1fLdMcn7clm7mn6cJxcy9FAAJKOskI4ppuYWheTojzeo",
+          "mode": "list",
+          "cachedResultName": "WishLabsAI_BD_evals",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fLdMcn7clm7mn6cJxcy9FAAJKOskI4ppuYWheTojzeo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fLdMcn7clm7mn6cJxcy9FAAJKOskI4ppuYWheTojzeo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Run ID": "={{ $json.run_id }}",
+            "Date": "={{ $json.date }}",
+            "ICP File": "={{ $json.icp_file }}",
+            "Prospects Found": "={{ $json.prospects_found }}",
+            "Pipedrive Saved": "={{ $json.pipedrive_saved }}",
+            "Emails Drafted": "={{ $json.emails_drafted }}",
+            "Success": "={{ $json.success }}",
+            "Errors": "={{ $json.errors }}",
+            "Raw Summary": "={{ $json.raw_summary }}",
+            "Quality Score": "={{ $json.quality_score }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Run ID",
+              "displayName": "Run ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ICP File",
+              "displayName": "ICP File",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Prospects Found",
+              "displayName": "Prospects Found",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pipedrive Saved",
+              "displayName": "Pipedrive Saved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Emails Drafted",
+              "displayName": "Emails Drafted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Success",
+              "displayName": "Success",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Errors",
+              "displayName": "Errors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Raw Summary",
+              "displayName": "Raw Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quality Score",
+              "displayName": "Quality Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2352,
+        -96
+      ],
+      "id": "07bad03a-3fda-487e-8677-eab48395c128",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sgvxkkKOkgnNqpvF",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "userKey": "u5zvk1wvf4rixqqthp2jyz6gwwgzfw",
+        "message": "=emails drafts ready for review. Summary:  {{ $json.output.summary }}",
+        "priority": 0,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.pushover",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        -96
+      ],
+      "id": "9a3ff081-8310-4177-bed9-934df41146a0",
+      "name": "Push a message",
+      "credentials": {
+        "pushoverApi": {
+          "id": "VQ4DAISuJ2CaKpSi",
+          "name": "Pushover account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "userKey": "u5zvk1wvf4rixqqthp2jyz6gwwgzfw",
+        "message": "email drafts not ready. check workflow error details in error notifications",
+        "priority": 1,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.pushover",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        96
+      ],
+      "id": "5f895b54-d19b-496b-8457-38825af838ab",
+      "name": "Push a message1",
+      "credentials": {
+        "pushoverApi": {
+          "id": "VQ4DAISuJ2CaKpSi",
+          "name": "Pushover account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Evaluation\n",
+        "height": 576,
+        "width": 544
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2016,
+        -512
+      ],
+      "typeVersion": 1,
+      "id": "b65ef006-5ae0-476f-baa8-d960b82c24ba",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {
+    "AI Agent": [
+      {
+        "json": {
+          "output": {
+            "success": true,
+            "summary": "Done — I ran the prospecting search and found 5 qualified prospects matching the ICP, added each to Pipedrive, and created personalized outbound email drafts for them.\n\nProspects added (name — company — role — email):\n- Chloe Velasco — Ray White Schofields — Head of Property Management — chloe.velasco@raywhite.com\n- Luke Curran — Ray White Upper North Shore — Head of Property Management — luke.curran@raywhite.com\n- Chris Tepper — Ray White Glenelg | Brighton — Head of Property Management — chris.tepper@raywhite.com\n- Angela Barber — Ray White Charlestown — Operations Manager — angela.barber@raywhite.com\n- Jackie Newton — Harcourts Local - Clayfield — Head of Property Management — jackie.newton@harcourts.com.au\n\nWhat I did:\n- Prospecting: ran an ICP-based search and verified contact details.\n- RevOps: saved each prospect to Pipedrive (records created).\n- SDR: drafted and saved concise, personalized outbound emails for all Pipedrive prospects (A/B subject lines, personalization tokens {first_name}, {company}, {role}, single CTA to book a 20-minute demo: {CAL_LINK}, email body ≤130 words, optional P.S. with ROI/case-study offer).\n\nRecommended next steps: review the saved email drafts in Pipedrive, approve or request edits, then launch the outreach sequence or ask me to send the emails on your behalf."
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'prospecting sub-agent'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'RevOps subagent'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'SDR'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Push a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Push a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push a message": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "17c6f2f8-983f-4746-9577-298d28c09a0d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ed2b34ded3b6fbe091ce502d0426341f362fbd6b763f35efdd25f3c3d799c837"
+  },
+  "id": "w2qZqnTpy8xGhGnP",
+  "tags": []
+}
