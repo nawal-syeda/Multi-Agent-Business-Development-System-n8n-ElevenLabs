@@ -3,6 +3,16 @@
 AI-powered n8n workflow for automated lead generation, outreach, CRM management, and demo booking.
 
 ---
+# What It Does
+
+- Picks up a ICP defining file from Google Drive or user chat defining ICP in Claude which is connected to workflow via custom connector (custom MCP)
+- Scrapes the internet to find potential clients and their details
+- Finds their verified emails
+- Creates unique entries in CRM without creating duplicates
+- Writes cold outreach emails prompting the potential client to call on a given number for more details and stores in drafts
+- Notifies user that emails are ready to be sent via push notifications
+- AI agent recieves calls, gets the caller's info from CRM and explains to them how the services offered by the company can help their business. books a demo call with then in CRM Calendar
+- Deal recording sub agent creates Deal in CRM and notifies the user via WhatsApp / Push notifications
 
 ## Workflow Overview
 
